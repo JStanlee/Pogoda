@@ -3,126 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>SkyCast PRO • Genzie Forecast</title>
+    <title>SkyCast Ultra • Genzie Mode</title>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SkyCast">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root {
-            --bg: #0f172a;
-            --pink: #ff007a;
-            --blue: #38bdf8;
-            --glass: rgba(255, 255, 255, 0.08);
-            --text: #ffffff;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Lexend', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding-top: env(safe-area-inset-top);
-        }
-
-        header {
-            padding: 20px;
-            font-size: 1.8rem;
-            font-weight: 900;
-            background: linear-gradient(to right, var(--pink), var(--blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-        }
-
+        :root { --bg: #0f172a; --pink: #ff007a; --blue: #38bdf8; --glass: rgba(255, 255, 255, 0.08); --text: #ffffff; }
+        body { margin: 0; font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { padding: 20px; font-size: 1.8rem; font-weight: 900; background: linear-gradient(to right, var(--pink), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; }
         main { width: 100%; max-width: 450px; padding: 10px 15px 40px 15px; box-sizing: border-box; }
-
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 30px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .btn-main {
-            background: var(--pink); border: none; color: white; padding: 14px;
-            border-radius: 18px; font-weight: 800; width: 100%; text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(255, 0, 122, 0.3); cursor: pointer;
-        }
-
-        .layer-selector {
-            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;
-        }
-
-        .layer-btn {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
-            color: white; padding: 8px 15px; border-radius: 12px; font-size: 0.75rem;
-            white-space: nowrap; cursor: pointer;
-        }
-
+        .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .btn-main { background: var(--pink); border: none; color: white; padding: 14px; border-radius: 18px; font-weight: 800; width: 100%; text-transform: uppercase; cursor: pointer; }
+        #map { height: 320px; width: 100%; border-radius: 22px; z-index: 1; }
+        .layer-selector { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+        .layer-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 12px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; }
         .layer-btn.active { background: var(--pink); border-color: var(--pink); font-weight: bold; }
-
-        #map { height: 300px; width: 100%; border-radius: 22px; z-index: 1; margin-bottom: 10px; }
-        
-        #map-comment {
-            font-size: 0.85rem; color: var(--blue); font-style: italic; text-align: center;
-            min-height: 40px; display: flex; align-items: center; justify-content: center;
-        }
-
+        input[type=range] { width: 100%; accent-color: var(--pink); margin-top: 10px; cursor: pointer; }
+        #map-comment { font-size: 0.8rem; color: var(--blue); text-align: center; margin-top: 8px; min-height: 20px; font-weight: bold; }
         .temp-big { font-size: 3.5rem; font-weight: 800; margin: 0; }
-        canvas { width: 100% !important; height: 180px !important; }
+        canvas { width: 100% !important; height: 160px !important; }
+        /* Styl skali Leaflet pod Genzie */
+        .leaflet-control-scale-line { background: rgba(255,255,255,0.1) !important; color: white !important; border: 1px solid var(--pink) !important; text-shadow: none !important; }
     </style>
 </head>
 <body>
 
-<header>SkyCast x Genzie</header>
+<header>SkyCast PRO+</header>
 
 <main>
-    <button class="btn-main" onclick="locateMe()" style="margin-bottom: 20px;">📍 NAMIERZ MNIE!</button>
+    <button class="btn-main" onclick="locateMe()" style="margin-bottom: 20px;">📍 GDZIE JA JESTEM?</button>
 
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <div id="city" style="color: var(--blue); font-weight: 800; font-size: 0.8rem;">USTALAM VIBE...</div>
+                <div id="city" style="color: var(--blue); font-weight: 800; font-size: 0.8rem;">VIBE CHECK...</div>
                 <h1 class="temp-big" id="main-temp">--°</h1>
             </div>
             <div id="main-icon"></div>
         </div>
-        <div id="advice" style="margin-top:10px; font-size: 0.9rem; opacity: 0.9;"></div>
+        <div id="advice" style="margin-top:10px; font-size: 0.9rem;"></div>
     </div>
 
     <div class="card">
-        <h3 style="margin:0 0 10px 0; font-size: 0.8rem; text-transform: uppercase; color: var(--pink);">Prognoza na 24h 🔥</h3>
+        <h3 style="margin:0 0 10px 0; font-size: 0.8rem; color: var(--pink); text-transform: uppercase;">Prognoza na 24H 📈</h3>
         <canvas id="tempChart"></canvas>
     </div>
 
     <div class="card" style="padding: 12px;">
         <div class="layer-selector">
-            <button class="layer-btn active" onclick="changeLayer('radar', this)">🌧️ Opady (Live)</button>
-            <button class="layer-btn" onclick="changeLayer('temp_new', this)">🌡️ Temp</button>
-            <button class="layer-btn" onclick="changeLayer('wind_new', this)">💨 Wiatr</button>
-            <button class="layer-btn" onclick="changeLayer('pressure_new', this)">⏲️ Ciśnienie</button>
+            <button class="layer-btn active" data-type="radar" onclick="changeLayer('radar', this)">🌧️ Opady</button>
+            <button class="layer-btn" data-type="temp_new" onclick="changeLayer('temp_new', this)">🌡️ Temp</button>
+            <button class="layer-btn" data-type="wind_new" onclick="changeLayer('wind_new', this)">💨 Wiatr</button>
+            <button class="layer-btn" data-type="pressure_new" onclick="changeLayer('pressure_new', this)">⏲️ Ciśnienie</button>
         </div>
         <div id="map"></div>
-        <div id="map-comment">Patrzę na chmury... No cap, zaraz zobaczysz czy wjeżdża deszcz! ☔</div>
-    </div>
-
-    <div class="card">
-        <h3 style="margin:0; font-size: 0.8rem; opacity: 0.6;">⚠️ NEWSY METEO</h3>
-        <div id="alerts-list" style="margin-top:10px; font-size: 0.85rem;">Wszystko pod kontrolą, zero dramy! ✨</div>
+        <div id="radar-controls">
+            <input type="range" id="radar-slider" min="0" max="12" value="12" oninput="updateRadarFrame(this.value)">
+            <div id="radar-time" style="text-align: center; font-size: 0.75rem; color: var(--pink); margin-top: 5px; font-weight: bold;">Czas: Teraz</div>
+        </div>
+        <div id="map-comment">Lecimy z radarem! ☔</div>
     </div>
 </main>
 
@@ -130,123 +74,16 @@
     const KEY = "07c3b3e89d44a0eeb75b69e69c4b2264";
     let map = L.map('map', { zoomControl: false, attributionControl: false }).setView([52.2, 19.2], 6);
     
-    // Ciemna mapa bazowa
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
 
+    let radarLayers = [];
+    let radarFrames = [];
     let weatherLayer = null;
     let tempChart = null;
+    let currentMode = 'radar';
 
     const comments = {
-        'radar': "Radar opadów odpalił! 🌧️ Sprawdzaj czy nie zepsuje Ci fryzury.",
+        'radar': "Radar opadów live! 🌧️ No cap, sprawdzaj czy zaleje Ci fit.",
         'temp_new': "Mapa cieplna! 🔥 Zobacz gdzie jest największy ogień.",
-        'wind_new': "Uważaj na wiatr! 💨 Niech Cię nie zwieje z planu.",
-        'pressure_new': "Ciśnienie pod lupą. ⏲️ No cap, głowa musi być czysta!"
-    };
-
-    function changeLayer(type, btn) {
-        document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('map-comment').innerText = comments[type];
-
-        if (weatherLayer) map.removeLayer(weatherLayer);
-
-        if (type === 'radar') {
-            initRadar(); 
-        } else {
-            weatherLayer = L.tileLayer(`https://tile.openweathermap.org/map/${type}/{z}/{x}/{y}.png?appid=${KEY}`, {
-                opacity: 0.8,
-                zIndex: 100
-            }).addTo(map);
-        }
-    }
-
-    async function getData(lat, lon) {
-        try {
-            const currentRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${KEY}`);
-            const current = await currentRes.json();
-            const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${KEY}`);
-            const forecast = await forecastRes.json();
-
-            if(current.cod == 200) updateUI(current, forecast);
-        } catch(e) { console.log("Błąd pobierania danych"); }
-    }
-
-    function updateUI(current, forecast) {
-        document.getElementById('city').innerText = current.name.toUpperCase();
-        document.getElementById('main-temp').innerText = Math.round(current.main.temp) + "°";
-        document.getElementById('main-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png" style="width:70px">`;
-        
-        const temp = current.main.temp;
-        let msg = temp > 22 ? "Jest hot! 🔥 T-shirty w ruch, lecimy nagrywać!" : temp > 12 ? "Vibe chillowy, bluza wystarczy. 🧥" : "Mrozi! 🥶 Gruba kurtka i czapa, no cap.";
-        document.getElementById('advice').innerText = msg;
-
-        updateChart(forecast);
-    }
-
-    // POPRAWIONY WYKRES - TERAZ POKAZUJE PRZYSZŁOŚĆ
-    function updateChart(forecast) {
-        // Wybieramy punkty z PROGNOZY (forecast.list to przyszłość)
-        const labels = forecast.list.slice(0, 8).map(i => {
-            const date = new Date(i.dt * 1000);
-            return date.getHours() + ":00";
-        });
-        const temps = forecast.list.slice(0, 8).map(i => i.main.temp);
-
-        if(tempChart) tempChart.destroy();
-        const ctx = document.getElementById('tempChart').getContext('2d');
-        tempChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{ 
-                    label: 'Temperatura',
-                    data: temps, 
-                    borderColor: '#ff007a', 
-                    backgroundColor: 'rgba(255, 0, 122, 0.2)', 
-                    fill: true, 
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#fff'
-                }]
-            },
-            options: { 
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }, 
-                scales: { 
-                    x: { ticks: { color: '#fff', font: { weight: 'bold' } }, grid: { display: false } }, 
-                    y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } } 
-                } 
-            }
-        });
-    }
-
-    // POPRAWIONY RADAR OPADÓW
-    async function initRadar() {
-        try {
-            const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
-            const data = await res.json();
-            // Bierzemy ostatnią klatkę "past" - to jest najbardziej aktualny obraz opadów
-            const frame = data.radar.past[data.radar.past.length - 1];
-            
-            weatherLayer = L.tileLayer(`https://tilecache.rainviewer.com/v2/radar/${frame.time}/{z}/{x}/{y}/4/1_1.png`, {
-                opacity: 0.8, 
-                zIndex: 200 // Wyższy priorytet
-            }).addTo(map);
-        } catch(e) { console.log("Błąd radaru"); }
-    }
-
-    function locateMe() {
-        navigator.geolocation.getCurrentPosition(p => {
-            const lat = p.coords.latitude; const lon = p.coords.longitude;
-            map.setView([lat, lon], 10);
-            getData(lat, lon);
-        }, () => alert("Musisz dać dostęp do lokalizacji, żeby wjechał vibe Twojej okolicy! 📍"));
-    }
-
-    // Start
-    initRadar();
-    getData(52.23, 21.01);
-</script>
-</body>
-</html>
+        'wind_new
