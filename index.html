@@ -2,193 +2,574 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>SkyCast PRO • Genzie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SkyCast Genzie</title>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://openweathermap.org/img/wn/10d@2x.png">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://openweathermap.org/img/wn/04d@4x.png">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root { --p: #ff007a; --b: #38bdf8; --bg: #0f172a; --g: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; font-family: 'Lexend', sans-serif; background: var(--bg); color: #fff; display: flex; flex-direction: column; align-items: center; }
-        header { padding: 30px 20px 10px; font-size: 2rem; font-weight: 900; background: linear-gradient(45deg, var(--p), var(--b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        main { width: 100%; max-width: 450px; padding: 15px; box-sizing: border-box; }
+        /* DESIGN SYSTEM */
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --pink: #ff007a;
+            --blue: #0ea5e9;
+            --text: #ffffff;
+            --glass: blur(20px);
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 40px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            padding: 50px 20px 10px;
+            box-sizing: border-box;
+            text-align: left;
+        }
         
-        .card { background: var(--g); backdrop-filter: blur(15px); border-radius: 25px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-loc { background: var(--p); border: none; color: #fff; padding: 15px; border-radius: 15px; width: 100%; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255,0,122,0.4); }
+        .brand {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--pink), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .date-display {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* MAIN CONTAINER */
+        main {
+            width: 100%;
+            max-width: 480px;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: var(--glass);
+            -webkit-backdrop-filter: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        /* LOCATION BUTTON */
+        .btn-loc {
+            background: linear-gradient(135deg, var(--pink), #be185d);
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(255, 0, 122, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn-loc:active { transform: scale(0.98); }
+
+        /* CURRENT WEATHER */
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .temp-big {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(to bottom, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .condition-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--blue);
+            text-transform: capitalize;
+            margin-top: 5px;
+        }
+        .genzie-quote {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-style: italic;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* DETAILS GRID */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .detail-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 18px;
+            padding: 15px;
+            text-align: center;
+        }
+        .detail-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; }
+        .detail-value { font-size: 1.1rem; font-weight: 700; margin-top: 5px; }
+
+        /* CHART */
+        .chart-container {
+            position: relative;
+            height: 180px;
+            width: 100%;
+        }
+
+        /* MAP & CONTROLS */
+        #map {
+            height: 320px;
+            width: 100%;
+            border-radius: 22px;
+            background: #111;
+            z-index: 1;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 15px 0;
+            scrollbar-width: none;
+        }
+        .controls::-webkit-scrollbar { display: none; }
         
-        #map { height: 350px; width: 100%; border-radius: 20px; background: #000; }
-        .temp-val { font-size: 4.5rem; font-weight: 800; margin: 0; line-height: 1; }
-        
-        .selector { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
-        .sel-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 10px 18px; border-radius: 12px; white-space: nowrap; cursor: pointer; font-size: 0.8rem; }
-        .sel-btn.active { background: var(--p); font-weight: bold; }
-        
-        .slider-wrap { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin-top: 10px; text-align: center; }
-        input[type=range] { width: 100%; accent-color: var(--p); }
-        
-        canvas { width: 100% !important; height: 180px !important; }
-        #advice-text { font-style: italic; color: var(--b); font-weight: 600; }
+        .pill-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 50px;
+            color: white;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .pill-btn.active {
+            background: var(--blue);
+            border-color: var(--blue);
+            font-weight: 700;
+        }
+
+        /* SLIDER */
+        .slider-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--blue);
+            height: 6px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .slider-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 8px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
 
-<header>SKYCAST x GENZIE</header>
+<header>
+    <div class="brand">SKYCAST • GENZIE</div>
+    <div class="date-display" id="date-now">Ładowanie daty...</div>
+</header>
 
 <main>
-    <button class="btn-loc" onclick="geoLocate()">📍 NAMIERZ MNIE (REL!)</button>
+    <button class="btn-loc" onclick="getLocation()">
+        <span style="font-size:1.2rem">📍</span> ZLOKALIZUJ MNIE
+    </button>
 
     <div class="card">
-        <div style="display:flex; justify-content: space-between;">
+        <div class="weather-header">
             <div>
-                <div id="city-name" style="text-transform: uppercase; font-weight: 800; color: var(--b);">Warszawa</div>
-                <h1 class="temp-val" id="curr-temp">--°</h1>
-                <div id="curr-desc" style="opacity: 0.8; margin-top: 5px;">Sprawdzam vibe...</div>
+                <div id="location-name" style="font-size: 0.9rem; font-weight: 700; opacity: 0.7; letter-spacing: 1px;">SZUKAM...</div>
+                <div class="temp-big" id="main-temp">--°</div>
+                <div class="condition-text" id="condition-desc">--</div>
             </div>
-            <div id="curr-icon"></div>
+            <div style="font-size: 4rem;" id="weather-icon">☁️</div>
         </div>
-        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div id="advice-text">Czekaj na info o ficie... 🧥</div>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-label">Odczuwalna</div>
+                <div class="detail-value" id="feels-like">--°</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Wiatr</div>
+                <div class="detail-value" id="wind-speed">-- km/h</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Wilgotność</div>
+                <div class="detail-value" id="humidity">--%</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Ciśnienie</div>
+                <div class="detail-value" id="pressure">-- hPa</div>
+            </div>
+        </div>
+
+        <div class="genzie-quote" id="genzie-advice">
+            Trwa łączenie z satelitą... 📡
         </div>
     </div>
 
     <div class="card">
-        <h3 style="margin: 0 0 15px 0; font-size: 0.8rem; color: var(--p);">PROGNOZA NA NASTĘPNE 24H 📈</h3>
-        <canvas id="weatherChart"></canvas>
+        <h3 style="margin: 0 0 15px 0; font-size: 0.85rem; color: var(--pink); text-transform: uppercase; letter-spacing: 1px;">Prognoza (Następne 24h)</h3>
+        <div class="chart-container">
+            <canvas id="forecastChart"></canvas>
+        </div>
     </div>
 
-    <div class="card" style="padding: 10px;">
-        <div class="selector">
-            <button class="sel-btn active" onclick="updateMap('radar', this)">🌧️ Radar</button>
-            <button class="sel-btn" onclick="updateMap('temp_new', this)">🌡️ Temp</button>
-            <button class="sel-btn" onclick="updateMap('wind_new', this)">💨 Wiatr</button>
-            <button class="sel-btn" onclick="updateMap('pressure_new', this)">⏲️ Ciśnienie</button>
+    <div class="card" style="padding: 15px;">
+        <h3 style="margin: 0 0 10px 5px; font-size: 0.85rem; color: var(--blue); text-transform: uppercase;">Mapa Pogodowa</h3>
+        
+        <div class="controls">
+            <button class="pill-btn active" onclick="setMapLayer('radar', this)">🌧️ Opady</button>
+            <button class="pill-btn" onclick="setMapLayer('temp_new', this)">🌡️ Temperatura</button>
+            <button class="pill-btn" onclick="setMapLayer('wind_new', this)">💨 Wiatr</button>
+            <button class="pill-btn" onclick="setMapLayer('pressure_new', this)">⏲️ Ciśnienie</button>
         </div>
-        
+
         <div id="map"></div>
-        
-        <div class="slider-wrap" id="radar-ui">
-            <div id="time-display" style="font-weight: bold; margin-bottom: 5px;">Czas: TERAZ</div>
-            <input type="range" id="time-slider" min="0" max="0" value="0" oninput="changeRadarFrame(this.value)">
+
+        <div class="slider-container" id="radar-slider-box">
+            <div style="text-align: center; font-weight: 800; font-size: 0.9rem; margin-bottom: 5px; color: var(--blue);" id="radar-timestamp">TERAZ</div>
+            <input type="range" id="radar-range" min="0" max="0" value="0" oninput="updateRadarFrame(this.value)">
+            <div class="slider-info">
+                <span>HISTORIA</span>
+                <span>TERAZ</span>
+                <span>PROGNOZA</span>
+            </div>
         </div>
     </div>
 </main>
 
 <script>
-    const API_KEY = "07c3b3e89d44a0eeb75b69e69c4b2264";
-    let map = L.map('map', { zoomControl: false, attributionControl: false }).setView([52.23, 21.01], 6);
-    
-    // Ciemne tło mapy
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    // --- KONFIGURACJA ---
+    const OWM_API_KEY = "07c3b3e89d44a0eeb75b69e69c4b2264";
+    const DAYS = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+    const MONTHS = ['Stycznia', 'Lutego', 'Marca', 'Kwietnia', 'Maja', 'Czerwca', 'Lipca', 'Sierpnia', 'Września', 'Października', 'Listopada', 'Grudnia'];
 
-    let radarFrames = [], radarLayers = [], currentTileLayer = null, chart = null;
+    // --- ZMIENNE GLOBALNE ---
+    let mapInstance = null;
+    let chartInstance = null;
+    let radarLayers = [];
+    let radarFrames = [];
+    let currentOverlay = null;
 
-    // 1. LOKALIZACJA
-    function geoLocate() {
-        navigator.geolocation.getCurrentPosition(p => {
-            const lat = p.coords.latitude, lon = p.coords.longitude;
-            map.setView([lat, lon], 10);
-            fetchData(lat, lon);
-        }, () => alert("Musisz kliknąć 'Zezwól' w Safari!"));
+    // --- START ---
+    function init() {
+        const now = new Date();
+        document.getElementById('date-now').innerText = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+        
+        // Inicjalizacja mapy (Warszawa default)
+        mapInstance = L.map('map', { zoomControl: false, attributionControl: false }).setView([52.23, 21.01], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
+        
+        // Domyślna lokalizacja (Warszawa) zanim user kliknie
+        getWeatherData(52.23, 21.01, "WARSZAWA (Domyślne)");
+        loadRadar();
     }
 
-    // 2. POBIERANIE DANYCH
-    async function fetchData(lat, lon) {
-        const [cRes, fRes] = await Promise.all([
-            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${API_KEY}`),
-            fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${API_KEY}`)
-        ]);
+    // --- 1. LOKALIZACJA ---
+    function getLocation() {
+        if (!navigator.geolocation) return alert("Twoja przeglądarka nie wspiera geolokalizacji.");
+        document.getElementById('location-name').innerText = "NAMIERZANIE...";
         
-        const cur = await cRes.json();
-        const fore = await fRes.json();
-        
-        // Update UI
-        document.getElementById('city-name').innerText = cur.name;
-        document.getElementById('curr-temp').innerText = Math.round(cur.main.temp) + "°";
-        document.getElementById('curr-desc').innerText = cur.weather[0].description;
-        document.getElementById('curr-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${cur.weather[0].icon}@2x.png" width="80">`;
-        
-        // GENZIE ADVICE
-        const t = cur.main.temp;
-        let advice = "";
-        if(t > 20) advice = "Jest hot! 🔥 Krótki rękaw i lecimy nagrywać TikToka!";
-        else if(t > 10) advice = "Vibe chillowy, bluza Genzie starczy. No cap, jest git! 🧥";
-        else advice = "Mrozi! 🥶 Gruba kurtka i herbata. No cap, nie daj się przeziębić!";
-        if(cur.weather[0].main === "Rain") advice += " Weź parasol, bo będzie drama! ☔";
-        document.getElementById('advice-text').innerText = advice;
-
-        // CHART (Future only)
-        const now = Math.floor(Date.now() / 1000);
-        const future = fore.list.filter(i => i.dt > now).slice(0, 8);
-        renderChart(future);
-    }
-
-    // 3. WYKRES PROGNOZY
-    function renderChart(data) {
-        const ctx = document.getElementById('weatherChart').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(i => new Date(i.dt * 1000).getHours() + ":00"),
-                datasets: [{
-                    data: data.map(i => i.main.temp),
-                    borderColor: '#ff007a',
-                    backgroundColor: 'rgba(255, 0, 122, 0.2)',
-                    fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#fff'
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff' } } } }
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            mapInstance.setView([lat, lon], 10);
+            getWeatherData(lat, lon, "TWOJA LOKALIZACJA");
+        }, () => {
+            alert("Nie udało się pobrać lokalizacji. Sprawdź ustawienia prywatności.");
         });
     }
 
-    // 4. MAPA I WARSTWY
-    async function updateMap(type, btn) {
-        document.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        if(currentTileLayer) map.removeLayer(currentTileLayer);
-        radarLayers.forEach(l => map.removeLayer(l));
-        document.getElementById('radar-ui').style.display = (type === 'radar' ? 'block' : 'none');
+    // --- 2. POBIERANIE DANYCH (OPEN-METEO) ---
+    async function getWeatherData(lat, lon, locationLabel) {
+        // Open-Meteo URL: Pobieramy bieżące + godzinowe
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,showers,snowfall,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=2`;
 
-        if(type === 'radar') {
-            loadRadar();
-        } else {
-            currentTileLayer = L.tileLayer(`https://tile.openweathermap.org/map/${type}/{z}/{x}/{y}.png?appid=${API_KEY}`, {
-                opacity: 0.8, zIndex: 100
-            }).addTo(map);
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            updateCurrentWeather(data.current, locationLabel);
+            updateForecastChart(data.hourly);
+            generateAdvice(data.current);
+
+        } catch (error) {
+            console.error(error);
+            alert("Błąd pobierania danych pogodowych.");
         }
     }
 
-    async function loadRadar() {
-        const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
-        const data = await res.json();
-        radarFrames = [...data.radar.past, ...data.radar.nowcast];
+    // --- 3. UI: POGODA TERAZ ---
+    function updateCurrentWeather(current, label) {
+        document.getElementById('location-name').innerText = label;
+        document.getElementById('main-temp').innerText = Math.round(current.temperature_2m) + "°";
+        document.getElementById('feels-like').innerText = Math.round(current.apparent_temperature) + "°";
+        document.getElementById('wind-speed').innerText = Math.round(current.wind_speed_10m) + " km/h";
+        document.getElementById('humidity').innerText = current.relative_humidity_2m + "%";
+        document.getElementById('pressure').innerText = Math.round(current.surface_pressure) + " hPa";
+
+        const code = current.weather_code;
+        const info = getWeatherInfo(code);
+        document.getElementById('condition-desc').innerText = info.text;
+        document.getElementById('weather-icon').innerText = info.icon;
+    }
+
+    // --- 4. UI: WYKRES (NEXT 24H) ---
+    function updateForecastChart(hourly) {
+        const now = new Date();
+        const currentHour = now.getHours();
         
-        radarLayers = radarFrames.map(f => L.tileLayer(`https://tilecache.rainviewer.com/v2/radar/${f.time}/256/{z}/{x}/{y}/2/1_1.png`, {
-            opacity: 0, zIndex: 200
-        }).addTo(map));
+        // Znajdź indeks obecnej godziny w tablicy czasu API
+        // Open-Meteo zwraca czas w formacie ISO, np. "2023-10-27T14:00"
+        // Najprościej: API zwraca start od 00:00 dzisiaj. Więc currentHour to indeks.
+        // Ale dla pewności zróbmy filtrowanie po czasie.
+        
+        let startIndex = 0;
+        const nowIso = now.toISOString().slice(0, 13); // "2023-10-27T14"
+        
+        // Szukamy indeksu, który jest >= teraz
+        for(let i=0; i<hourly.time.length; i++) {
+            if (hourly.time[i] >= nowIso) {
+                startIndex = i;
+                break;
+            }
+        }
 
-        const slider = document.getElementById('time-slider');
-        slider.max = radarFrames.length - 1;
-        slider.value = radarFrames.length - 1;
-        changeRadarFrame(slider.value);
+        // Bierzemy 24 punkty od tego momentu
+        const next24Hours = hourly.time.slice(startIndex, startIndex + 24);
+        const next24Temps = hourly.temperature_2m.slice(startIndex, startIndex + 24);
+
+        const labels = next24Hours.map(t => {
+            const d = new Date(t);
+            return d.getHours() + ":00";
+        });
+
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperatura',
+                    data: next24Temps,
+                    borderColor: '#38bdf8',
+                    backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                        gradient.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
+                        gradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                        return gradient;
+                    },
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointRadius: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: 'rgba(255,255,255,0.7)', font: {size: 10} }, grid: { display: false } },
+                    y: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
     }
 
-    function changeRadarFrame(idx) {
-        radarLayers.forEach((l, i) => l.setOpacity(i == idx ? 0.8 : 0));
-        const date = new Date(radarFrames[idx].time * 1000);
-        document.getElementById('time-display').innerText = `Czas: ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+    // --- 5. LOGIKA GENZIE ---
+    function generateAdvice(current) {
+        const temp = current.temperature_2m;
+        const isRaining = current.rain > 0 || current.showers > 0;
+        const isSnowing = current.snowfall > 0;
+        let msg = "";
+
+        if (isSnowing) {
+            msg = "Sypie śnieg! ❄️ Ale klimat. Ubieraj się grubo, bo zamarzniesz. No cap.";
+        } else if (isRaining) {
+            msg = "Pada... 🌧️ Weź parasol albo kaptur na głowę, bo fryzura ucierpi. Totalna drama.";
+        } else {
+            if (temp > 25) msg = "Afryka! 🔥 Krótki rękaw, okulary i lecimy w miasto. Jest hot!";
+            else if (temp > 18) msg = "Idealnie. 👌 T-shirt i może jakaś lekka koszula. Vibe check pozytywny.";
+            else if (temp > 10) msg = "Dresy Genzie będą idealne. 🧥 Nie jest źle, ale bluza to must-have.";
+            else if (temp > 0) msg = "Zimno! 🥶 Kurtka obowiązkowa. Nie kozacz, bo będziesz chory.";
+            else msg = "Mrozi potężnie! 🧊 Ubieraj się na cebulkę. Herbata w dłoń i siedzimy w domu.";
+        }
+        document.getElementById('genzie-advice').innerText = msg;
     }
 
-    // START
-    loadRadar();
-    fetchData(52.23, 21.01);
+    // --- 6. MAPA & WARSTWY ---
+    function setMapLayer(type, btn) {
+        // UI przycisków
+        document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Czyść
+        if (currentOverlay) mapInstance.removeLayer(currentOverlay);
+        radarLayers.forEach(l => mapInstance.removeLayer(l));
+
+        const sliderBox = document.getElementById('radar-slider-box');
+
+        if (type === 'radar') {
+            sliderBox.style.display = 'block';
+            loadRadar(); // Odśwież radar
+        } else {
+            sliderBox.style.display = 'none';
+            // OpenWeatherMap Layer
+            currentOverlay = L.tileLayer(`https://tile.openweathermap.org/map/${type}/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`, {
+                opacity: 0.7,
+                zIndex: 100
+            }).addTo(mapInstance);
+        }
+    }
+
+    // --- 7. RADAR (RAINVIEWER) ---
+    async function loadRadar() {
+        try {
+            const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+            const data = await res.json();
+            
+            // Łączymy historię (past) i prognozę (nowcast)
+            radarFrames = [...data.radar.past, ...data.radar.nowcast];
+            
+            // Czyścimy stare
+            radarLayers.forEach(l => mapInstance.removeLayer(l));
+            radarLayers = [];
+
+            // Tworzymy warstwy (na początku ukryte opacity: 0)
+            radarFrames.forEach(frame => {
+                const layer = L.tileLayer(`https://tilecache.rainviewer.com/v2/radar/${frame.time}/256/{z}/{x}/{y}/2/1_1.png`, {
+                    opacity: 0,
+                    zIndex: 200
+                }).addTo(mapInstance);
+                radarLayers.push(layer);
+            });
+
+            // Ustaw suwak
+            const slider = document.getElementById('radar-range');
+            slider.max = radarFrames.length - 1;
+            slider.value = radarFrames.length - 1; // Ustaw na "teraz" (ostatni z przeszłości lub początek prognozy)
+            
+            // Wyświetl ostatnią klatkę
+            updateRadarFrame(slider.value);
+
+        } catch (e) {
+            console.error("Błąd radaru", e);
+        }
+    }
+
+    function updateRadarFrame(index) {
+        radarLayers.forEach((layer, i) => {
+            if (i == index) layer.setOpacity(0.8);
+            else layer.setOpacity(0);
+        });
+
+        const frameData = radarFrames[index];
+        const date = new Date(frameData.time * 1000);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        // Czy to prognoza? (zwykle nowcast jest na końcu listy)
+        // Sprawdzamy po prostu czy index jest blisko końca
+        const isForecast = index > radarFrames.length - 4; // Uproszczenie
+        
+        document.getElementById('radar-timestamp').innerText = 
+            `GODZINA: ${hours}:${minutes} ${isForecast ? '(PROGNOZA)' : ''}`;
+    }
+
+    // --- POMOCNICZE: Weather Codes Open-Meteo ---
+    function getWeatherInfo(code) {
+        // WMO Weather interpretation codes (WW)
+        const map = {
+            0: {text: "Czyste niebo", icon: "☀️"},
+            1: {text: "Głównie bezchmurnie", icon: "🌤️"},
+            2: {text: "Częściowe zachmurzenie", icon: "⛅"},
+            3: {text: "Pochmurno", icon: "☁️"},
+            45: {text: "Mgła", icon: "🌫️"},
+            48: {text: "Szadź", icon: "🌫️"},
+            51: {text: "Lekka mżawka", icon: "🌧️"},
+            53: {text: "Mżawka", icon: "🌧️"},
+            55: {text: "Mocna mżawka", icon: "🌧️"},
+            61: {text: "Lekki deszcz", icon: "🌧️"},
+            63: {text: "Deszcz", icon: "🌧️"},
+            65: {text: "Ulewa", icon: "🌧️"},
+            71: {text: "Lekki śnieg", icon: "🌨️"},
+            73: {text: "Śnieg", icon: "🌨️"},
+            75: {text: "Śnieżyca", icon: "❄️"},
+            80: {text: "Przelotne opady", icon: "🌦️"},
+            81: {text: "Ulewa", icon: "🌧️"},
+            82: {text: "Gwałtowna ulewa", icon: "⛈️"},
+            95: {text: "Burza", icon: "⚡"},
+            96: {text: "Burza z gradem", icon: "⛈️"},
+            99: {text: "Silna burza z gradem", icon: "⛈️"}
+        };
+        return map[code] || {text: "Nieznane", icon: "❓"};
+    }
+
+    // Uruchom
+    init();
+
 </script>
 </body>
 </html>
