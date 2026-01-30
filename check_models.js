@@ -1,10 +1,10 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = "AIzaSyAJOjJH7JByAMDf4nH3gJx15_GcRQvGo-A";
+const API_KEY = "AIzaSyDc9vCw5Wn3BQfjkWf7W7X9b2ZACK5rmhc";
 
 async function checkModels() {
-    console.log("Checking available models for key ending in ...RQvGo-A");
+    console.log("Checking available models for key ending in ...5rmhc");
     const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
 
     try {
