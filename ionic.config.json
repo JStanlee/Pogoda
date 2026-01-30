@@ -1,0 +1,7 @@
+{
+    "name": "wykuci",
+    "integrations": {
+        "capacitor": {}
+    },
+    "type": "react"
+}
